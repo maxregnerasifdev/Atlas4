@@ -16,24 +16,6 @@ jobs:
     steps:
       # Removed code checkout step
 
-      - name: Copy modified .yamls
-        run: |
-          $sxsc = '.\src\sxsc'
-          $configs = '..\configs'
-          mkdir $configs | Out-Null
-
-          # Removed change detection and always regenerate all configs
-          Write-Output "Regenerating all configs..."
-          Remove-Item -Path "$sxsc\regenAllConfigs" -Force
-          Remove-Item -Path ".\src\playbook\Executables\AtlasModules\Packages\*.cab" -Force -Recurse
-          $changedFiles = Get-ChildItem $sxsc -Filter *.yaml
-
-          "runSxsc=true" >> $env:GITHUB_ENV
-          foreach ($file in $changedFiles) {
-            Write-Output "Copying: $file"
-            Copy-Item $file $configs -Force
-          }
-
       - name: Clone the sxsc repository
         run: |
           git clone --depth=1 ${{ env.SXSC_REPO }}
