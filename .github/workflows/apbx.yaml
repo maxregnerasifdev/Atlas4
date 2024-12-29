@@ -14,24 +14,25 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.RUNNER_SECRET }}
+
+      # Removed YAML validation step
+
       - name: Copy modified .yamls
         run: |
           $sxsc = '.\src\sxsc'
           $configs = '..\configs'
           mkdir $configs | Out-Null
 
-          if ('${{ steps.changed-files.outputs.sxsc_any_changed }}' -eq 'true') {
-            $changedFiles = '${{ steps.changed-files.outputs.sxsc_all_changed_files }}' -split ' '
-          } elseif (Test-Path "$sxsc\regenAllConfigs") {
-            Write-Output "Regenerating all configs..."
-            Remove-Item -Path "$sxsc\regenAllConfigs" -Force
-            Remove-Item -Path ".\src\playbook\Executables\AtlasModules\Packages\*.cab" -Force -Recurse
-            $changedFiles = Get-ChildItem $sxsc -Filter *.yaml
-          } else {
-            Write-Output "Not building any packages, no sxsc config changes detected."
-            "runSxsc=false" >> $env:GITHUB_ENV
-            exit
-          }
+          # Removed change detection and always regenerate all configs
+          Write-Output "Regenerating all configs..."
+          Remove-Item -Path "$sxsc\regenAllConfigs" -Force
+          Remove-Item -Path ".\src\playbook\Executables\AtlasModules\Packages\*.cab" -Force -Recurse
+          $changedFiles = Get-ChildItem $sxsc -Filter *.yaml
 
           "runSxsc=true" >> $env:GITHUB_ENV
           foreach ($file in $changedFiles) {
