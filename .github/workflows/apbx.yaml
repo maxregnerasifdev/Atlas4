@@ -26,9 +26,6 @@ jobs:
         run: |
           Write-Output "Installing dependencies..."
           pip install -r requirements.txt | Out-Null
-
-          Write-Output "Making certificate..."
-          $thumbprint = .\make-cert.ps1
           
           $atlasSrcPath = '..\Atlas\src\'
           $packagePath = "$atlasSrcPath\playbook\Executables\AtlasModules\Packages"
