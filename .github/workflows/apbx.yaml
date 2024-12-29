@@ -43,11 +43,7 @@ jobs:
                   Copy-Item -Path "$folderDir\*" -Destination '.\' -Recurse -Force | Out-Null
               }
 
-              Write-Output "Generating package files..."
-              python sxsc.py
-              if ($LASTEXITCODE -ne 0) { throw "sxsc.py didn't return 0!" }
-
-              Write-Output "Building package..."
+             Write-Output "Building package..."
               .\start-build.ps1 -Thumbprint $thumbprint
 
               Write-Output "Copying package to AtlasModules..."
@@ -79,3 +75,4 @@ jobs:
           path: |
             src/release-zip/*
           if-no-files-found: error
+
