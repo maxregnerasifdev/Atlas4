@@ -7,18 +7,20 @@ on:
       - "**/*.yaml"
       - "**/*.yml"
 
-env:
-  SXSC_REPO: "https://github.com/Atlas-OS/sxsc"
-
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - name: Clone the sxsc repository
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
         run: |
-          git clone --depth=1 ${{ env.SXSC_REPO }} src\sxsc
-        working-directory: ..
+          python -m pip install --upgrade pip
+          pip install pyyaml
 
       - name: Build CAB
         run: |
