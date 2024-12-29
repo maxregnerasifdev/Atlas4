@@ -15,7 +15,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Copy modified .yamls
-        run: |
+  run: |
           $sxsc = '.\src\sxsc'
           $configs = '..\configs'
           mkdir $configs | Out-Null
