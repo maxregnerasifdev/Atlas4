@@ -31,11 +31,11 @@ jobs:
           $atlasSrcPath = '..\Atlas\src\'
           $packagePath = "$atlasSrcPath\playbook\Executables\AtlasModules\Packages"
           mkdir $packagePath -EA 0 | Out-Null
-          Get-ChildItem "src\sxsc" -Filter *.yaml | ForEach-Object {
+          Get-ChildItem "..\src\sxsc" -Filter *.yaml | ForEach-Object {
               Write-Output "`n`nProcessing $($_.Name)`n------------------------------------------------------"
               Copy-Item -Path $_.FullName -Destination "cfg.yaml" -Force | Out-Null
 
-              $folderDir = ".\$atlasSrcPath\sxsc\$($_.Name -replace '-Arm','')"
+              $folderDir = "..\$atlasSrcPath\sxsc\$($_.Name -replace '-Arm','')"
               if (Test-Path $folderDir -PathType Container) {
                   Write-Output "Copying $($_.Name)'s files..."
                   Copy-Item -Path "$folderDir\*" -Destination '.\' -Recurse -Force | Out-Null
