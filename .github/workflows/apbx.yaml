@@ -13,7 +13,6 @@ env:
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -39,22 +38,22 @@ jobs:
           mkdir $configs | Out-Null
 
           if ('${{ steps.changed-files.outputs.sxsc_any_changed }}' -eq 'true') {
-              $changedFiles = '${{ steps.changed-files.outputs.sxsc_all_changed_files }}' -split ' '
+            $changedFiles = '${{ steps.changed-files.outputs.sxsc_all_changed_files }}' -split ' '
           } elseif (Test-Path "$sxsc\regenAllConfigs") {
-              Write-Output "Regenerating all configs..."
-              Remove-Item -Path "$sxsc\regenAllConfigs" -Force
-              Remove-Item -Path ".\src\playbook\Executables\AtlasModules\Packages\*.cab" -Force -Recurse
-              $changedFiles = Get-ChildItem $sxsc -Filter *.yaml
+            Write-Output "Regenerating all configs..."
+            Remove-Item -Path "$sxsc\regenAllConfigs" -Force
+            Remove-Item -Path ".\src\playbook\Executables\AtlasModules\Packages\*.cab" -Force -Recurse
+            $changedFiles = Get-ChildItem $sxsc -Filter *.yaml
           } else {
-              Write-Output "Not building any packages, no sxsc config changes detected."
-              "runSxsc=false" >> $env:GITHUB_ENV
-              exit
+            Write-Output "Not building any packages, no sxsc config changes detected."
+            "runSxsc=false" >> $env:GITHUB_ENV
+            exit
           }
 
           "runSxsc=true" >> $env:GITHUB_ENV
           foreach ($file in $changedFiles) {
-              Write-Output "Copying: $file"
-              Copy-Item $file $configs -Force
+            Write-Output "Copying: $file"
+            Copy-Item $file $configs -Force
           }
 
       - name: Clone the sxsc repository
@@ -76,29 +75,29 @@ jobs:
           $packagePath = "$atlasSrcPath\playbook\Executables\AtlasModules\Packages"
           mkdir $packagePath -EA 0 | Out-Null
           Get-ChildItem "configs" -Filter *.yaml | ForEach-Object {
-              Write-Output "`n`nProcessing $($_.Name)`n------------------------------------------------------"
-              Copy-Item -Path $_.FullName -Destination "cfg.yaml" -Force | Out-Null
+            Write-Output "`n`nProcessing $($_.Name)`n------------------------------------------------------"
+            Copy-Item -Path $_.FullName -Destination "cfg.yaml" -Force | Out-Null
 
-              $folderDir = ".\$atlasSrcPath\sxsc\$($_.Name -replace '-Arm','')"
-              if (Test-Path $folderDir -PathType Container) {
-                  Write-Output "Copying $($_.Name)'s files..."
-                  Copy-Item -Path "$folderDir\*" -Destination '.\' -Recurse -Force | Out-Null
-              }
+            $folderDir = ".\$atlasSrcPath\sxsc\$($_.Name -replace '-Arm','')"
+            if (Test-Path $folderDir -PathType Container) {
+              Write-Output "Copying $($_.Name)'s files..."
+              Copy-Item -Path "$folderDir\*" -Destination '.\' -Recurse -Force | Out-Null
+            }
 
-              Write-Output "Generating package files..."
-              python sxsc.py
-              if ($LASTEXITCODE -ne 0) { throw "sxsc.py didn't return 0!" }
+            Write-Output "Generating package files..."
+            python sxsc.py
+            if ($LASTEXITCODE -ne 0) { throw "sxsc.py didn't return 0!" }
 
-              Write-Output "Building package..."
-              .\start-build.ps1 -Thumbprint $thumbprint
+            Write-Output "Building package..."
+            .\start-build.ps1 -Thumbprint $thumbprint
 
-              Write-Output "Copying package to AtlasModules..."
-              Get-ChildItem -File -Recurse -Filter *.cab | ForEach-Object {
-                  Copy-Item -Path $_.FullName -Destination $packagePath -Force
-              }
+            Write-Output "Copying package to AtlasModules..."
+            Get-ChildItem -File -Recurse -Filter *.cab | ForEach-Object {
+              Copy-Item -Path $_.FullName -Destination $packagePath -Force
+            }
 
-              Write-Output "Cleaning up..."
-              .\clean.ps1
+            Write-Output "Cleaning up..."
+            .\clean.ps1
           }
         working-directory: ..\sxsc
         if: env.runSxsc == 'true'
@@ -119,7 +118,7 @@ jobs:
         run: |
           echo "Making a renamed password protected (malte) ZIP of playbook files..."
           $pbName = "Atlas Playbook $($env:GITHUB_SHA.Substring(0,8))"
-          & ..\dependencies\local-build.ps1 -ReplaceOldPlaybook -AddLiveLog -Removals Verification, WinverRequirement -FileName $pbName
+          & ..\dependencies\local-build.ps1 -ReplaceOldPlaybook -AddLiveLog -Removals Verification,WinverRequirement -FileName $pbName -Extend 3
           echo "Move the .apbx playbook into 'Release ZIP' to be released as an artifact with the additional files..."
           Move-Item "$pbName.apbx" "../release-zip"
         working-directory: src\playbook
