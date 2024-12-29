@@ -10,8 +10,15 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    
+    env:
+      # Store the password in an environment variable for better security and readability
+      APBX_PASSWORD: malte 
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -24,37 +31,33 @@ jobs:
 
       - name: Build CAB
         run: |
+          Write-Output "Building package..."
+          .\start-build.ps1 -Thumbprint $thumbprint
 
-             Write-Output "Building package..."
-              .\start-build.ps1 -Thumbprint $thumbprint
-
-              Write-Output "Copying package to AtlasModules..."
-              Get-ChildItem -File -Recurse -Filter *.cab | ForEach-Object {
-                  Copy-Item -Path $_.FullName -Destination $packagePath -Force
-              }
-
-              Write-Output "Cleaning up..."
-              .\clean.ps1
+          Write-Output "Copying package to AtlasModules..."
+          Get-ChildItem -File -Recurse -Filter *.cab | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination $packagePath -Force
           }
+
+          Write-Output "Cleaning up..."
+          .\clean.ps1
         working-directory: ..
 
-      - name: Create playbook (ZIP/APBX password is malte)
+      - name: Create playbook
         id: create-pb
         if: ${{ !startsWith(github.ref, 'refs/heads/na-') }}
         run: |
-          echo "Making a renamed password protected (malte) ZIP of playbook files..."
           $pbName = "Atlas Playbook $($env:GITHUB_SHA.Substring(0,8))"
-          & ..\dependencies\local-build.ps1 -ReplaceOldPlaybook -AddLiveLog -Removals Verification, WinverRequirement -FileName $pbName
-          echo "Move the .apbx playbook into 'Release ZIP' to be released as an artifact with the additional files..."
+          echo "Making a password protected ($env:APBX_PASSWORD) ZIP of playbook files: $pbName"
+          & ..\dependencies\local-build.ps1 -ReplaceOldPlaybook -AddLiveLog -Removals Verification, WinverRequirement -FileName $pbName -Password $env:APBX_PASSWORD
+          echo "Moving $pbName.apbx to release-zip folder..."
           Move-Item "$pbName.apbx" "../release-zip"
-        working-directory: src\playbook
+        working-directory: src/playbook
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         if: ${{ steps.create-pb.outcome != 'skipped' }}
         with:
           name: Atlas Playbook
-          path: |
-            src/release-zip/*
+          path: release-zip/*
           if-no-files-found: error
-
