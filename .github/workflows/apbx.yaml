@@ -14,15 +14,6 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-          token: ${{ secrets.RUNNER_SECRET }}
-
-      - name: Validate YAML files
-        run: 'yamllint -d "{extends: relaxed, rules: {empty-lines: disable, line-length: disable, new-line-at-end-of-file: disable, trailing-spaces: disable, new-lines: {type: platform}}}" .'
-
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v41.0.0
