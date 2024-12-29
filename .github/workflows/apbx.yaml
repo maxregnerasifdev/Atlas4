@@ -14,6 +14,14 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.RUNNER_SECRET }}
+
+      # Removed YAML validation step
+
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v41.0.0
@@ -109,7 +117,7 @@ jobs:
         run: |
           echo "Making a renamed password protected (malte) ZIP of playbook files..."
           $pbName = "Atlas Playbook $($env:GITHUB_SHA.Substring(0,8))"
-          & ..\dependencies\local-build.ps1 -ReplaceOldPlaybook -AddLiveLog -Removals Verification,WinverRequirement -FileName $pbName -Extend 3
+          & ..\dependencies\local-build.ps1 -ReplaceOldPlaybook -AddLiveLog -FileName $pbName -Extend 4
           echo "Move the .apbx playbook into 'Release ZIP' to be released as an artifact with the additional files..."
           Move-Item "$pbName.apbx" "../release-zip"
         working-directory: src\playbook
@@ -122,4 +130,3 @@ jobs:
           path: |
             src/release-zip/*
           if-no-files-found: error
-
