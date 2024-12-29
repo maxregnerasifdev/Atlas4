@@ -18,7 +18,6 @@ jobs:
       - name: Clone the sxsc repository
         run: |
           git clone --depth=1 ${{ env.SXSC_REPO }}
-          Copy-Item -Path "configs" -Destination ".\sxsc\configs" -Recurse -Force
         working-directory: ..
 
       - name: Build CAB
@@ -32,7 +31,7 @@ jobs:
           $atlasSrcPath = '..\Atlas\src\'
           $packagePath = "$atlasSrcPath\playbook\Executables\AtlasModules\Packages"
           mkdir $packagePath -EA 0 | Out-Null
-          Get-ChildItem "configs" -Filter *.yaml | ForEach-Object {
+          Get-ChildItem "src\sxsc" -Filter *.yaml | ForEach-Object {
               Write-Output "`n`nProcessing $($_.Name)`n------------------------------------------------------"
               Copy-Item -Path $_.FullName -Destination "cfg.yaml" -Force | Out-Null
 
