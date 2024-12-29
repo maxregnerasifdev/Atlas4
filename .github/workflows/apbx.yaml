@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Clone the sxsc repository
         run: |
-          git clone --depth=1 ${{ env.SXSC_REPO }}
+          git clone ${{ env.SXSC_REPO }}
           Copy-Item -Path "configs" -Destination ".\sxsc\configs" -Recurse -Force
         working-directory: ..
 
