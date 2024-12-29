@@ -15,14 +15,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Prepare configs directory
-        run: |
-          $sxsc = '.\src\sxsc'
-          $configs = '..\configs'
-          mkdir $configs | Out-Null
-          Copy-Item -Path "$sxsc\*.yaml" -Destination $configs -Recurse -Force
-        shell: pwsh
-
       - name: Clone the sxsc repository
         run: |
           git clone --depth=1 ${{ env.SXSC_REPO }}
