@@ -13,49 +13,21 @@ env:
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
-      - name: Validate YAML files
-        run: 'yamllint -d "{extends: relaxed, rules: {empty-lines: disable, line-length: disable, new-line-at-end-of-file: disable, trailing-spaces: disable, new-lines: {type: platform}}}" .'
-
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v41.0.0
-        with:
-          files_yaml: |
-            sxsc:
-              - 'src/sxsc/*.yaml'
-
-      - name: Copy modified .yamls
+      - name: Prepare configs directory
         run: |
           $sxsc = '.\src\sxsc'
           $configs = '..\configs'
           mkdir $configs | Out-Null
-
-          if ('${{ steps.changed-files.outputs.sxsc_any_changed }}' -eq 'true') {
-              $changedFiles = '${{ steps.changed-files.outputs.sxsc_all_changed_files }}' -split ' '
-          } elseif (Test-Path "$sxsc\regenAllConfigs") {
-              Write-Output "Regenerating all configs..."
-              Remove-Item -Path "$sxsc\regenAllConfigs" -Force
-              Remove-Item -Path ".\src\playbook\Executables\AtlasModules\Packages\*.cab" -Force -Recurse
-              $changedFiles = Get-ChildItem $sxsc -Filter *.yaml
-          } else {
-              Write-Output "Not building any packages, no sxsc config changes detected."
-              "runSxsc=false" >> $env:GITHUB_ENV
-              exit
-          }
-
-          "runSxsc=true" >> $env:GITHUB_ENV
-          foreach ($file in $changedFiles) {
-              Write-Output "Copying: $file"
-              Copy-Item $file $configs -Force
-          }
+          Copy-Item -Path "$sxsc\*.yaml" -Destination $configs -Recurse -Force
+        shell: pwsh
 
       - name: Clone the sxsc repository
         run: |
           git clone --depth=1 ${{ env.SXSC_REPO }}
           Copy-Item -Path "configs" -Destination ".\sxsc\configs" -Recurse -Force
         working-directory: ..
-        if: env.runSxsc == 'true'
 
       - name: Build CAB
         run: |
@@ -94,17 +66,6 @@ jobs:
               .\clean.ps1
           }
         working-directory: ..\sxsc
-        if: env.runSxsc == 'true'
-
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "141822421+atlasos-admin@users.noreply.github.com"
-          git config --local user.name "atlasos-admin"
-          git add -A
-          git commit -m "feat: auto-update CAB packages ($($env:GITHUB_SHA.Substring(0, 8)))"
-          git push
-        working-directory: src\playbook\Executables\AtlasModules\Packages
-        if: env.runSxsc == 'true'
 
       - name: Create playbook (ZIP/APBX password is malte)
         id: create-pb
