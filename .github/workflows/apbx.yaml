@@ -24,8 +24,6 @@ jobs:
 
       - name: Build CAB
         run: |
-          Write-Output "Installing dependencies..."
-          pip install -r requirements.txt | Out-Null
 
              Write-Output "Building package..."
               .\start-build.ps1 -Thumbprint $thumbprint
